@@ -40,7 +40,6 @@ public class Dispatcher implements HttpHandler {
                 setupPaths(context.value(), c);
             }
         }
-        System.out.println(paths.keySet());
     }
 
     private void setupPaths(String context, Class<?> c) {
@@ -53,7 +52,7 @@ public class Dispatcher implements HttpHandler {
                 methodPattern += path.value().replaceAll("/", "\\\\/");
                 Parameter[] parameterTypes = method.getParameters();
                 Map<String, Integer> parameterIndex = new LinkedHashMap<>();
-                
+
                 if (parameterTypes == null) {
                     parameterTypes = new Parameter[0];
                 }
@@ -69,9 +68,9 @@ public class Dispatcher implements HttpHandler {
 
                 Rule rule = new Rule(context + path.value(), methodPattern, method, c, parameterIndex);
                 if (parameterTypes.length > 0) {
-                    paths.put(methodPattern, rule);
+                    paths.put(path.method().name() + ":" + methodPattern, rule);
                 } else {
-                    paths.put(context + path.value(), rule);
+                    paths.put(path.method().name() + ":" + context + path.value(), rule);
                 }
             }
         }
@@ -79,21 +78,25 @@ public class Dispatcher implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        String httpMethod = exchange.getRequestMethod().toUpperCase();
         String requestedURL = exchange.getRequestURI().toString();
         Class requestedService = null;
         Rule rule = null;
         Method method = null;
 
         Response response;
-
-        if (paths.containsKey(requestedURL)) {
-            rule = paths.get(requestedURL);
+        if (paths.containsKey(httpMethod + ":" + requestedURL)) {
+            rule = paths.get(httpMethod + ":" + requestedURL);
         } else {
             for (String path : paths.keySet()) {
+                String regex = path;
                 try {
-                    if (path.startsWith("^") && requestedURL.matches(path)) {
-                        rule = paths.get(path);
-                        break;
+                    if (path.startsWith(httpMethod + ":")) {
+                        regex = path.substring(httpMethod.length() + 1);
+                        if (regex.startsWith("^") && requestedURL.matches(regex)) {
+                            rule = paths.get(path);
+                            break;
+                        }
                     }
                 } catch (Exception e) {
                 }
@@ -115,16 +118,18 @@ public class Dispatcher implements HttpHandler {
                 Object newInstance = requestedService.getDeclaredConstructor().newInstance();
                 Object[] params = new Object[methodValuesCount];
 
-                String[] dataValues = requestedURL.split("/");
-                String[] methodValues = rule.getContext().split("/");
+                if (methodValuesCount > 0) {
+                    String[] dataValues = requestedURL.split("/");
+                    String[] methodValues = rule.getContext().split("/");
 
-                int fieldsToScan = dataValues.length;
+                    int fieldsToScan = dataValues.length;
 
-                for (int index = 0; index < fieldsToScan; index++) {
-                    if (methodValues[index].trim().startsWith("${")) {
-                        int methodIndex = rule.getParameterIndex(methodValues[index].trim());
-                        Parameter param = method.getParameters()[methodIndex];
-                        params[methodIndex] = ParamUtil.fromStringToParam(param, dataValues[index]);
+                    for (int index = 0; index < fieldsToScan; index++) {
+                        if (methodValues[index].trim().startsWith("${")) {
+                            int methodIndex = rule.getParameterIndex(methodValues[index].trim());
+                            Parameter param = method.getParameters()[methodIndex];
+                            params[methodIndex] = ParamUtil.fromStringToParam(param, dataValues[index]);
+                        }
                     }
                 }
 
@@ -145,6 +150,5 @@ public class Dispatcher implements HttpHandler {
         }
 
     }
-
 
 }
