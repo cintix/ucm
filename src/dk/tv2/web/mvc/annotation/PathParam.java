@@ -11,7 +11,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-//public  final static String FILTER = "\\$\\{([^\\/>]+)[/]*\\}";        
 public @interface PathParam {
     public String value();
 }
