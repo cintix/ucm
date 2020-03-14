@@ -17,7 +17,7 @@ public class Request {
     private final Map<String, String> headers = new LinkedHashMap<>();
     private final Map<String, String> queryString = new LinkedHashMap<>();
     private final Map<String, String> post = new LinkedHashMap<>();
-
+    
     private final InputStream inputStream;
     private final OutputStream outputStream;
 
@@ -40,7 +40,24 @@ public class Request {
             headers.put(key, value);
         }
     }
-
+    
+    public long getContentLength() {
+        if (headers.containsKey("Content-Length")){
+            try {
+                return Long.parseLong(headers.get("Content-Lenght"));
+            } catch (Exception exception) {
+            }
+        }
+        return 0;
+    }
+    
+    public String getContentType() {
+        if (headers.containsKey("Content-Type")){
+            return headers.get("Content-Type");
+        }
+        return "";
+    }
+    
     public Map<String, String> getQueryString() {
         return queryString;
     }

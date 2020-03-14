@@ -35,7 +35,7 @@ public class HenrikService {
         return new Response().setContent(message);
     }
 
-    @Path(method = Methods.POST, value = "/age/${age}")
+    @Path("/age/${age}")
     public Response tellTime(@PathParam("age") int age) {
         String status = "Nope...";
         if (age == 39) {
