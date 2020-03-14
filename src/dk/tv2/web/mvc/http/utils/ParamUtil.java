@@ -1,4 +1,4 @@
-package dk.tv2.web.mvc.http;
+package dk.tv2.web.mvc.http.utils;
 
 import java.lang.reflect.Parameter;
 

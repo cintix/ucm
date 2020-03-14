@@ -1,5 +1,6 @@
 package dk.tv2.web.mvc.http;
 
+import dk.tv2.web.mvc.http.context.Dispatcher;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,17 +13,17 @@ import java.util.logging.Logger;
  *
  * @author migo
  */
-public class HTTP {
+public class Server {
 
     private static final List<Class<?>> registeredClasses = new LinkedList<>();
     private static int port = 8080;
-    private static HTTP instance;
+    private static Server instance;
 
     private final Dispatcher dispatcher = new Dispatcher();
     private volatile boolean running = false;
     private HttpServer server;
 
-    private HTTP() {
+    private Server() {
 
     }
 
@@ -43,13 +44,13 @@ public class HTTP {
     }
 
     public static void start(int port) {
-        HTTP.port = port;
+        Server.port = port;
         instance = initilizeService();
     }
 
-    private static HTTP initilizeService() {
-        HTTP http = new HTTP();
-        http.internalStart(HTTP.port);
+    private static Server initilizeService() {
+        Server http = new Server();
+        http.internalStart(Server.port);
         return http;
     }
 
@@ -68,7 +69,7 @@ public class HTTP {
             server.setExecutor(null);
             server.start();
         } catch (IOException ex) {
-            Logger.getLogger(HTTP.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

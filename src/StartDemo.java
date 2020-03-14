@@ -1,5 +1,5 @@
 
-import dk.tv2.web.mvc.http.HTTP;
+import dk.tv2.web.mvc.http.Server;
 import dk.tv2.web.mvc.services.HenrikService;
 import dk.tv2.web.mvc.services.WebService;
 import java.util.concurrent.TimeUnit;
@@ -12,10 +12,10 @@ public class StartDemo {
 
     public StartDemo() {
         
-        HTTP.register(WebService.class);
-        HTTP.register(HenrikService.class);
+        Server.register(WebService.class);
+        Server.register(HenrikService.class);
 
-        HTTP.start(9090);
+        Server.start(9090);
 
         int ticks = 0; 
         while (ticks < (6000)) {
@@ -25,7 +25,7 @@ public class StartDemo {
             } catch (InterruptedException interruptedException) {
             }
         }
-        HTTP.stop();
+        Server.stop();
     }
     
     

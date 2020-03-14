@@ -1,4 +1,4 @@
-package dk.tv2.web.mvc.http;
+package dk.tv2.web.mvc.http.io;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

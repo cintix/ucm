@@ -1,5 +1,7 @@
-package dk.tv2.web.mvc.http;
+package dk.tv2.web.mvc.http.context;
 
+import dk.tv2.web.mvc.http.io.Response;
+import dk.tv2.web.mvc.http.utils.ParamUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import dk.tv2.web.mvc.annotation.Context;
@@ -113,6 +115,7 @@ public class Dispatcher implements HttpHandler {
         try {
             requestedService = rule.getService();
             method = rule.getMethod();
+            
             if (requestedService != null) {
                 int methodValuesCount = method.getParameterCount();
                 Object newInstance = requestedService.getDeclaredConstructor().newInstance();
