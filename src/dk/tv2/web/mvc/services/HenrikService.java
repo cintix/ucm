@@ -8,6 +8,8 @@ import dk.tv2.web.mvc.http.io.Request;
 import dk.tv2.web.mvc.http.io.Response;
 import java.util.Map;
 import dk.tv2.web.mvc.annotation.ContextPath;
+import dk.tv2.web.mvc.annotation.Model;
+import dk.tv2.web.mvc.services.models.GreetingCard;
 
 /**
  *
@@ -19,8 +21,8 @@ public class HenrikService {
     @Inject()
     private Request request;
 
-    @Path("/navn")
-    public Response sayHenrik() {
+    @Path(value = "/navn", method = Methods.POST)
+    public Response sayHenrik(@Model GreetingCard greetingCard) {
         String message = "<h1>Hello I'm Henrik</h1>";
         return new Response().setContent(message);
     }
