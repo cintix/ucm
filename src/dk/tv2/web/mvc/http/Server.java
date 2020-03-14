@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class Server {
 
-    private static final List<Class<?>> registeredClasses = new LinkedList<>();
+    private static final List<Class<?>> _REGISTERED_CLASSES = new LinkedList<>();
     private static int port = 8080;
     private static Server instance;
 
@@ -29,8 +29,8 @@ public class Server {
     }
 
     public static void register(Class<?> cls) {
-        if (!registeredClasses.contains(cls)) {
-            registeredClasses.add(cls);
+        if (!_REGISTERED_CLASSES.contains(cls)) {
+            _REGISTERED_CLASSES.add(cls);
         }
     }
 
@@ -68,7 +68,7 @@ public class Server {
 
     public void internalStart(int port) {
         try {
-            dispatcher.setHandlers(registeredClasses);
+            dispatcher.setHandlers(_REGISTERED_CLASSES);
             server = HttpServer.create(internetAddress, 0);
             server.createContext("/", dispatcher);
             server.setExecutor(null);
