@@ -4,10 +4,12 @@ import dk.tv2.web.mvc.http.io.Response;
 import dk.tv2.web.mvc.http.utils.ParamUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import dk.tv2.web.mvc.annotation.Context;
+import dk.tv2.web.mvc.annotation.Inject;
 import dk.tv2.web.mvc.annotation.Path;
 import dk.tv2.web.mvc.annotation.PathParam;
+import dk.tv2.web.mvc.http.io.Request;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.LinkedHashMap;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import dk.tv2.web.mvc.annotation.ContextPath;
 
 /**
  *
@@ -25,6 +28,7 @@ import java.util.regex.Pattern;
 public class Dispatcher implements HttpHandler {
 
     private final Map<String, Rule> paths = new LinkedHashMap<>();
+    private final Map<Class<?>, List<Field>> injectionMap = new LinkedHashMap<>();
     private List<Class<?>> handlers = new LinkedList<>();
 
     public Dispatcher() {
@@ -37,8 +41,9 @@ public class Dispatcher implements HttpHandler {
     public void setHandlers(List<Class<?>> handlers) {
         this.handlers = handlers;
         for (Class c : handlers) {
-            if (c.isAnnotationPresent(Context.class)) {
-                Context context = (Context) c.getAnnotation(Context.class);
+            if (c.isAnnotationPresent(ContextPath.class)) {
+                ContextPath context = (ContextPath) c.getAnnotation(ContextPath.class);
+                injectionMap.put(c, getFieldsWithAnnotation(Inject.class, c));
                 setupPaths(context.value(), c);
             }
         }
@@ -87,6 +92,7 @@ public class Dispatcher implements HttpHandler {
         Method method = null;
 
         Response response;
+
         if (paths.containsKey(httpMethod + ":" + requestedURL)) {
             rule = paths.get(httpMethod + ":" + requestedURL);
         } else {
@@ -115,11 +121,20 @@ public class Dispatcher implements HttpHandler {
         try {
             requestedService = rule.getService();
             method = rule.getMethod();
-            
+
             if (requestedService != null) {
                 int methodValuesCount = method.getParameterCount();
                 Object newInstance = requestedService.getDeclaredConstructor().newInstance();
                 Object[] params = new Object[methodValuesCount];
+
+                List<Field> fields = injectionMap.get(requestedService);
+                for (Field field : fields) {
+                    Class<?> type = field.getType();
+                    if (type == Request.class) {
+                        field.setAccessible(true);
+                        field.set(newInstance, new Request(exchange));
+                    }
+                }
 
                 if (methodValuesCount > 0) {
                     String[] dataValues = requestedURL.split("/");
@@ -152,6 +167,30 @@ public class Dispatcher implements HttpHandler {
             Logger.getLogger(Dispatcher.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    /**
+     *
+     * @param annotation
+     * @param cls
+     * @return
+     */
+    private List<Field> getFieldsWithAnnotation(Class annotation, Class<?> cls) {
+        List<Field> injectionFields = new LinkedList<>();
+        Field[] fields = cls.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(annotation)) {
+                Class<?> type = field.getType();
+                if (type == Request.class) {
+                    injectionFields.add(field);
+                }
+            }
+        }
+        if (!cls.getSuperclass().getName().equals("java.lang.Object")) {
+            List<Field> childFields = getFieldsWithAnnotation(annotation, cls.getSuperclass());
+            injectionFields.addAll(childFields);
+        }
+        return injectionFields;
     }
 
 }

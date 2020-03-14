@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
  * @author migo
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Context {
-   public String value();
+@Target(ElementType.FIELD)
+public @interface Inject {
 }

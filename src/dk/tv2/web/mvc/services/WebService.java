@@ -1,16 +1,16 @@
 package dk.tv2.web.mvc.services;
 
-import dk.tv2.web.mvc.annotation.Context;
 import dk.tv2.web.mvc.annotation.Path;
 import dk.tv2.web.mvc.annotation.PathParam;
 import dk.tv2.web.mvc.http.io.Response;
 import java.util.Date;
+import dk.tv2.web.mvc.annotation.ContextPath;
 
 /**
  *
  * @author migo
  */
-@Context("/web")
+@ContextPath("/web")
 public class WebService {
 
     @Path("/hello/${name}")
