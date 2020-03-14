@@ -20,6 +20,7 @@ public class Server {
     private static Server instance;
 
     private final Dispatcher dispatcher = new Dispatcher();
+    private InetSocketAddress internetAddress = new InetSocketAddress("0.0.0.0", port);
     private volatile boolean running = false;
     private HttpServer server;
 
@@ -31,6 +32,10 @@ public class Server {
         if (!registeredClasses.contains(cls)) {
             registeredClasses.add(cls);
         }
+    }
+
+    public void bind(InetSocketAddress address) {
+        internetAddress = address;
     }
 
     public static void stop() {
@@ -64,7 +69,7 @@ public class Server {
     public void internalStart(int port) {
         try {
             dispatcher.setHandlers(registeredClasses);
-            server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
+            server = HttpServer.create(internetAddress, 0);
             server.createContext("/", dispatcher);
             server.setExecutor(null);
             server.start();

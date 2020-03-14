@@ -18,7 +18,7 @@ public class StartDemo {
         Server.start(9090);
 
         int ticks = 0; 
-        while (ticks < (6000)) {
+        while (ticks < (60000)) {
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
                 ticks++;
